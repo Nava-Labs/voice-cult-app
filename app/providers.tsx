@@ -4,6 +4,7 @@ import { WagmiProvider, createConfig } from "wagmi";
 import { mantaTestnet, scrollSepolia } from "wagmi/chains";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ConnectKitProvider, getDefaultConfig } from "connectkit";
+import { SessionProvider } from "next-auth/react";
 
 const config = createConfig(
   getDefaultConfig({
@@ -35,7 +36,9 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <ConnectKitProvider>{children}</ConnectKitProvider>
+        <ConnectKitProvider>
+          <SessionProvider>{children}</SessionProvider>
+        </ConnectKitProvider>
       </QueryClientProvider>
     </WagmiProvider>
   );
