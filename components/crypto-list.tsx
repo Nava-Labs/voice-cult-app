@@ -2,6 +2,8 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
+import truncateEthAddress from "truncate-eth-address";
 
 interface CryptoEntry {
   id: string;
@@ -73,41 +75,38 @@ const cryptoEntries: CryptoEntry[] = [
 
 export function CryptoList() {
   return (
-    <div className="space-y-4 py-4">
+    <div className="space-y-8 py-4">
       {cryptoEntries.map((entry) => (
-        <div key={entry.id} className="flex space-x-4 py-4 rounded-lg">
-          <Avatar className="w-20 h-20">
-            <AvatarImage src={entry.image} alt={entry.name} />
-            <AvatarFallback>{entry.name[0]}</AvatarFallback>
-          </Avatar>
-          <div className="flex-1">
-            <div className="flex items-center space-x-2">
-              <span>Created by</span>
-              <Avatar className="w-6 h-6">
-                <AvatarImage
-                  src={entry.creatorAvatar}
-                  alt={entry.creatorName}
-                />
-                <AvatarFallback>{entry.creatorName[0]}</AvatarFallback>
-              </Avatar>
-              <span className="font-semibold">{entry.creatorName}</span>
+        <Link key={entry.id} href={`/${entry.id}`}>
+          <div className="flex items-center space-x-2 text-foreground border border-foreground p-2">
+            <Avatar className="w-36 h-36">
+              <AvatarImage src={entry.image} alt={entry.name} />
+              <AvatarFallback>{entry.name[0]}</AvatarFallback>
+            </Avatar>
+            <div>
+              <div className="flex items-center space-x-2">
+                <span className="text-foreground">Created by</span>
+                <span className="text-xs text-blue-700">
+                  {truncateEthAddress(
+                    "0x4838b106fce9647bdf1e7877bf73ce8b0bad5f97",
+                  )}
+                </span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <span className="text-green-400">
+                  market cap: {entry.marketCap}
+                </span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <span className="text-green-400">taps: {entry.marketCap}</span>
+              </div>
+              <div className="font-bold">
+                {entry.name} [ticker: {entry.ticker}]:
+              </div>
+              <div className="text-sm">{entry.description}</div>
             </div>
-            <div className="text-sm text-gray-600">{entry.timeAgo}</div>
-            <div className="flex items-center space-x-2">
-              <span className="text-green-600">
-                market cap: {entry.marketCap}
-              </span>
-              {entry.badge && <Badge variant="secondary">{entry.badge}</Badge>}
-            </div>
-            <div className="text-sm text-gray-600">
-              replies: {entry.replies}
-            </div>
-            <div className="font-semibold">
-              {entry.name} (ticker: {entry.ticker}):
-            </div>
-            <div className="text-sm">{entry.description}</div>
           </div>
-        </div>
+        </Link>
       ))}
     </div>
   );

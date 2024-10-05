@@ -1,14 +1,14 @@
-"use client";
-
 import Link from "next/link";
 import { CryptoList } from "@/components/crypto-list";
 import truncateEthAddress from "truncate-eth-address";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-[#1c1c1e] text-white p-4 space-y-4">
+    <div className="min-h-screen text-white p-4 space-y-4">
       <Link href="/create">
-        <h1 className="text-3xl font-bold text-center">[start a new cult]</h1>
+        <h1 className="text-3xl font-bold text-center text-foreground">
+          [start a new cult]
+        </h1>
       </Link>
 
       <div className="bg-blue-700 p-2 text-center font-bold text-2xl">
@@ -20,12 +20,12 @@ export default function Home() {
           <img
             src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS5WA2PMXgXzQ2AS15kKDz9svzLx4BpvviP6w&s"
             alt="Jolik"
-            className="w-12 h-12 rounded-full"
+            className="w-36 h-36 rounded-full"
           />
           <div>
             <div className="flex items-center space-x-2">
-              <span>Created by 🐸</span>
-              <span className="text-green-500">
+              <span>Created by</span>
+              <span className="text-xs text-blue-700">
                 {truncateEthAddress(
                   "0x4838b106fce9647bdf1e7877bf73ce8b0bad5f97",
                 )}
@@ -33,6 +33,9 @@ export default function Home() {
             </div>
             <div className="flex items-center space-x-2">
               <span className="text-green-400">market cap: 29.14K</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <span className="text-green-400">taps: 69.420K</span>
             </div>
             <div className="font-bold">Joker Vitalik [ticker: JOLIK]:</div>
             <div className="text-sm">
@@ -49,11 +52,9 @@ export default function Home() {
         <input
           type="text"
           placeholder="search for token"
-          className="flex-grow bg-[#8FBC8F] bg-opacity-20 p-2 rounded text-white placeholder-gray-300"
+          className="flex-grow bg-green-600 p-2 text-white placeholder-white"
         />
-        <button className="bg-[#8FBC8F] bg-opacity-20 px-4 py-2 rounded">
-          search
-        </button>
+        <button className="bg-green-600 px-4 py-2">search</button>
       </div>
 
       <CryptoList />
