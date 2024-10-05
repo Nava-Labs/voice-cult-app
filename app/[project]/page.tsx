@@ -1,24 +1,15 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React from 'react';
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { createClient } from "@supabase/supabase-js";
-
-import {
-  Battery,
-  BatteryFull,
-  ChevronDown,
-  Coins,
-  Copy,
-  Mic,
-  Play,
-  Square,
-  Upload,
-} from "lucide-react";
+import { BatteryFull, Coins, Mic, Play, Square, Upload } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Coin } from "../components/coin/Coin";
 const isPlayedLocally: Record<string, boolean> = {};
 
@@ -71,10 +62,14 @@ export default function ProjectDetails() {
   const [amount, setAmount] = useState("0.0");
 
   const accumulatedPoints = useRef(0);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const currentBatteryWithRef = useRef(0);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isTapping, setIsTapping] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [displayedPoints, setDisplayedPoints] = useState(0);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [currentBattery, setCurrentBattery] = useState(1000);
 
   const [isRecording, setIsRecording] = useState(false);
@@ -449,29 +444,19 @@ export default function ProjectDetails() {
           className="overflow-y-auto overflow-x-hidden flex-grow"
         >
           <div className="p-4">
-            <div className="bg-lime-400 text-black p-2 rounded-lg mb-4 flex items-center text-sm sm:text-base">
-              <span className="bg-gray-200 p-1 rounded mr-2">👤</span>
-              F6GpDg bought 0.0250 SOL of JOJOY
-              <span className="ml-auto">🐶</span>
-            </div>
-
             <div className="mb-4">
-              <h2 className="text-green-400 text-base sm:text-lg">
+              <h2 className="text-green-500 text-base sm:text-lg">
                 Market cap: $4,278,531
               </h2>
-              <div className="flex items-center bg-gray-800 rounded p-2 mt-2">
+              <div className="flex items-center bg-amber-600 rounded p-2 mt-2 text-white">
                 <span className="mr-2">CA:</span>
                 <span className="flex-1 truncate text-xs sm:text-sm">
-                  J4ze9anpDctWrb5yFjedpTdqznD76FVPgCh
+                  0xfbF4b007958B9419CC6a714aCF5561840154FA54
                 </span>
-                <Button variant="ghost" size="icon">
-                  <Copy className="h-4 w-4" />
-                  <span className="sr-only">Copy</span>
-                </Button>
               </div>
             </div>
 
-            <Card>
+            <Card className="rounded-none">
               <CardContent className="p-4">
                 <div className="grid grid-cols-2 gap-2 sm:gap-4 mb-4">
                   <Button className="bg-green-500 hover:bg-green-600 text-sm sm:text-base">
@@ -481,14 +466,7 @@ export default function ProjectDetails() {
                     Sell
                   </Button>
                 </div>
-                <div className="grid grid-cols-2 gap-2 sm:gap-4 mb-4">
-                  <Button variant="outline" className="text-xs sm:text-sm">
-                    switch to Monchhichi
-                  </Button>
-                  <Button variant="outline" className="text-xs sm:text-sm">
-                    Set max slippage
-                  </Button>
-                </div>
+                <div className="grid grid-cols-2 gap-2 sm:gap-4 mb-4"></div>
                 <div className="relative mb-4">
                   <Input
                     type="text"
@@ -497,17 +475,25 @@ export default function ProjectDetails() {
                     className="pr-16 text-sm sm:text-base"
                   />
                   <div className="absolute inset-y-0 right-0 flex items-center pr-3 text-sm sm:text-base">
-                    SOL <ChevronDown className="ml-1 h-4 w-4" />
+                    ETH
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-2 mb-4">
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setAmount("0.0")}
+                    onClick={() => setAmount("0.01")}
                     className="text-xs sm:text-sm"
                   >
-                    reset
+                    0.01 ETH
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setAmount("0.05")}
+                    className="text-xs sm:text-sm"
+                  >
+                    0.05 ETH
                   </Button>
                   <Button
                     variant="outline"
@@ -515,61 +501,22 @@ export default function ProjectDetails() {
                     onClick={() => setAmount("0.1")}
                     className="text-xs sm:text-sm"
                   >
-                    0.1 SOL
+                    0.1 ETH
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setAmount("0.5")}
+                    onClick={() => setAmount("0.3")}
                     className="text-xs sm:text-sm"
                   >
-                    0.5 SOL
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setAmount("1")}
-                    className="text-xs sm:text-sm"
-                  >
-                    1 SOL
+                    0.3 ETH
                   </Button>
                 </div>
                 <Button className="w-full bg-green-500 hover:bg-green-600 text-sm sm:text-base">
                   place trade
                 </Button>
-                <Button
-                  variant="link"
-                  className="w-full mt-2 text-sm sm:text-base"
-                >
-                  add comment
-                </Button>
               </CardContent>
             </Card>
-
-            <div className="mt-4">
-              <h3 className="text-base sm:text-lg font-semibold mb-2">
-                Thread
-              </h3>
-              <div className="space-y-4">
-                <div className="bg-gray-800 p-3 sm:p-4 rounded">
-                  <div className="flex items-center mb-2">
-                    <span className="bg-green-500 text-black px-2 py-1 rounded mr-2 text-xs sm:text-sm">
-                      3se2pQ (dev)
-                    </span>
-                    <span className="text-gray-400 text-xs sm:text-sm">
-                      10/4/2024, 10:28:37 PM
-                    </span>
-                  </div>
-                  <p className="text-sm sm:text-base">
-                    Monchhichi (ticker: Monchhichi) Monchhichi (モンチッチ,
-                    Monchitchi) is a line of Japanese stuffed monkey toys from
-                    the Sekiguchi Corporation, first released in 1974. They were
-                    licensed by Mattel in the United States until 1985, and
-                    later distributed worldwide directly by Sekiguchi.
-                  </p>
-                </div>
-              </div>
-            </div>
           </div>
         </TabsContent>
 
