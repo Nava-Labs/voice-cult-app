@@ -1,23 +1,21 @@
 "use client";
 
-import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ChevronDown, Copy, Mic, StopCircle, Square, Play, Upload } from "lucide-react";
-import { useState, useRef, useCallback, useEffect } from "react";
+import { createClient } from "@supabase/supabase-js";
+import { ChevronDown, Copy, Mic, Play, Square, Upload } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Coin } from "../components/coin/Coin";
-import { createClient } from '@supabase/supabase-js';
-import fs from 'fs';
 
 // Initialize Supabase client
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables')
+  throw new Error("Missing Supabase environment variables");
 }
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
@@ -55,48 +53,50 @@ export default function ProjectDetails() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaRecorderRef.current = new MediaRecorder(stream);
-      
+
       mediaRecorderRef.current.ondataavailable = (event) => {
         if (event.data.size > 0) {
           audioChunksRef.current.push(event.data);
-          console.log('Audio data received:', event.data);
+          console.log("Audio data received:", event.data);
         }
       };
 
       mediaRecorderRef.current.start();
-      console.log('Recording started');
+      console.log("Recording started");
       setIsRecording(true);
     } catch (error) {
-      console.error('Error accessing the microphone', error);
+      console.error("Error accessing the microphone", error);
     }
   }, []);
 
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
-      mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+      mediaRecorderRef.current.stream
+        .getTracks()
+        .forEach((track) => track.stop());
       setIsRecording(false);
-      console.log('Recording stopped');
+      console.log("Recording stopped");
     }
   }, [isRecording]);
 
   useEffect(() => {
     if (mediaRecorderRef.current) {
       mediaRecorderRef.current.onstop = () => {
-        console.log('MediaRecorder stopped, processing audio...');
-        const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        console.log("MediaRecorder stopped, processing audio...");
+        const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
         const url = URL.createObjectURL(blob);
         setAudioUrl(url);
         setAudioBlob(blob);
-        console.log('Audio URL created:', url);
-        
+        console.log("Audio URL created:", url);
+
         // Attempt to play audio
         const audio = new Audio(url);
         audio.oncanplaythrough = () => {
-          console.log('Audio is ready to play');
-          audio.play().catch(e => console.error('Error playing audio:', e));
+          console.log("Audio is ready to play");
+          audio.play().catch((e) => console.error("Error playing audio:", e));
         };
-        audio.onerror = (e) => console.error('Error loading audio:', e);
+        audio.onerror = (e) => console.error("Error loading audio:", e);
       };
     }
   }, [mediaRecorderRef.current]);
@@ -105,18 +105,18 @@ export default function ProjectDetails() {
     if (audioUrl) {
       const audio = new Audio(audioUrl);
       audio.oncanplaythrough = () => {
-        console.log('Playing audio...');
-        audio.play().catch(e => console.error('Error playing audio:', e));
+        console.log("Playing audio...");
+        audio.play().catch((e) => console.error("Error playing audio:", e));
       };
-      audio.onerror = (e) => console.error('Error loading audio:', e);
+      audio.onerror = (e) => console.error("Error loading audio:", e);
     } else {
-      console.log('No audio to play');
+      console.log("No audio to play");
     }
   }, [audioUrl]);
 
   const uploadToSupabase = useCallback(async () => {
     if (!audioBlob) {
-      console.error('No audio to upload');
+      console.error("No audio to upload");
       return;
     }
 
@@ -124,47 +124,44 @@ export default function ProjectDetails() {
       // Upload file to Supabase Storage
       const fileName = `voice_recording_${Date.now()}.webm`;
       const { data, error } = await supabase.storage
-        .from('voice-chant-files')
+        .from("voice-chant-files")
         .upload(fileName, audioBlob);
 
       if (error) throw error;
 
       // Get public URL of the uploaded file
-      const { data: { publicUrl } } = supabase.storage
-        .from('voice-chant-files')
-        .getPublicUrl(fileName);
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("voice-chant-files").getPublicUrl(fileName);
 
       // Insert log into voice_logs table
-      let userId = "0x2d7e2DF65C1B06fa60FAf2a7D4C260738BB553D9"
-      let projectId = "2925e7b9-5251-4b07-9de9-0764c6b644eb"
-      const { data: insertData, error: insertError } = await supabase
-        .from('voice_logs')
-        .insert({
-          user_address: userId, // Assuming you have the user's ID
-          project_id: projectId, // Assuming you have the project ID
-          voice_url: publicUrl,
-          created_at: new Date().toISOString(),
-          is_played: false,
-          // Add other fields as necessary based on your schema
-        });
+      const userId = "0x2d7e2DF65C1B06fa60FAf2a7D4C260738BB553D9";
+      const projectId = "2925e7b9-5251-4b07-9de9-0764c6b644eb";
+      const { error: insertError } = await supabase.from("voice_logs").insert({
+        user_address: userId, // Assuming you have the user's ID
+        project_id: projectId, // Assuming you have the project ID
+        voice_url: publicUrl,
+        created_at: new Date().toISOString(),
+        is_played: false,
+        // Add other fields as necessary based on your schema
+      });
 
       if (insertError) {
-        console.error('Error inserting voice log:', insertError);
+        console.error("Error inserting voice log:", insertError);
         // Handle the error appropriately
       }
 
-      console.log('File uploaded successfully. Public URL:', publicUrl);
+      console.log("File uploaded successfully. Public URL:", publicUrl);
 
-      console.log('Record inserted successfully:', data);
-
+      console.log("Record inserted successfully:", data);
     } catch (error) {
-      console.error('Error uploading file or inserting record:', error);
+      console.error("Error uploading file or inserting record:", error);
     }
   }, [audioBlob]);
 
   return (
     <Tabs defaultValue="tap">
-      <div className="flex flex-col min-h-screen bg-gray-900 text-gray-100">
+      <div className="flex flex-col min-h-screen text-foreground">
         <TabsContent
           value="tap"
           className="flex flex-col items-center justify-center flex-grow overflow-hidden"
@@ -199,11 +196,13 @@ export default function ProjectDetails() {
             <button
               onClick={isRecording ? stopRecording : startRecording}
               className={`p-2 rounded-full ${
-                isRecording ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-600'
+                isRecording
+                  ? "bg-red-500 text-white"
+                  : "bg-gray-200 text-gray-600"
               } hover:bg-opacity-80 transition-colors`}
             >
               {isRecording ? <Square size={24} /> : <Mic size={24} />}
-              {isRecording ? 'Stop Recording' : 'Start Recording'}
+              {isRecording ? "Stop Recording" : "Start Recording"}
             </button>
             {audioUrl && (
               <>
