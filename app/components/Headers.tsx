@@ -3,6 +3,26 @@
 import Link from "next/link";
 import React from "react";
 import ConnectButton from "./ConnectButton";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import SignInWorldcoinButton from "./SignInWorldcoinButton";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 
 export default function Headers() {
   return (
@@ -14,7 +34,40 @@ export default function Headers() {
           </h1>
         </Link>
         <div>
-          <ConnectButton />
+          <Drawer>
+            <DrawerTrigger>
+              <Button>Login</Button>
+            </DrawerTrigger>
+            <DrawerContent>
+              <DrawerHeader>
+                <DrawerTitle>Login to Voice Cult</DrawerTitle>
+                <DrawerDescription>
+                  Connect your wallet and sign in with Worldcoin
+                </DrawerDescription>
+              </DrawerHeader>
+              <DrawerFooter>
+                <div className="flex flex-col items-center space-y-2">
+                  <ConnectButton />
+                  <SignInWorldcoinButton />
+                </div>
+              </DrawerFooter>
+            </DrawerContent>
+          </Drawer>
+
+          {/* <Dialog>
+            <DialogTrigger>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Login to Voice Cult</DialogTitle>
+                <DialogDescription>
+                  Connect your wallet and sign in with Worldcoin
+                </DialogDescription>
+              </DialogHeader>
+              <ConnectButton />
+              <SignInWorldcoinButton />
+            </DialogContent>
+          </Dialog> */}
         </div>
       </div>
     </div>
