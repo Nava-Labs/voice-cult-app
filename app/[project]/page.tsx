@@ -11,6 +11,7 @@ import { createClient } from "@supabase/supabase-js";
 import { BatteryFull, Coins, Mic, Play, Square, Upload } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Coin } from "../components/coin/Coin";
+import path from 'path';
 const isPlayedLocally: Record<string, boolean> = {};
 
 // Initialize Supabase client
@@ -230,6 +231,7 @@ export default function ProjectDetails() {
   // };
 
   const handleClick = useCallback(() => {
+    playSiu()
     const clickValue = 1;
     setIsTapping(true);
     // farmDetails!.current_settled_point += clickValue;
@@ -262,7 +264,7 @@ export default function ProjectDetails() {
     }
   }, []);
 
-  const stopRecording = useCallback(() => {
+  const stopRecording = useCallback(async () => {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
       mediaRecorderRef.current.stream
@@ -271,7 +273,44 @@ export default function ProjectDetails() {
       setIsRecording(false);
       console.log("Recording stopped");
     }
+    // Remove the sleep and playAudio call
+    // await new Promise(resolve => setTimeout(resolve, 1000));
+    // playAudio();
   }, [isRecording]);
+
+  // Add this new function to handle the blob upload
+  const uploadBlob = async (blob: Blob) => {
+    try {
+      const fileName = `voice_recording_${Date.now()}.webm`;
+      const { data, error } = await supabase.storage
+        .from("voice-chant-files")
+        .upload(fileName, blob);
+
+      if (error) throw error;
+
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("voice-chant-files").getPublicUrl(fileName);
+
+      const userId = "0x2d7e2DF65C1B06fa60FAf2a7D4C260738BB553D9";
+      const projectId = "2925e7b9-5251-4b07-9de9-0764c6b644eb";
+      const { error: insertError } = await supabase.from("voice_logs").insert({
+        user_address: userId,
+        project_id: projectId,
+        voice_url: publicUrl,
+        created_at: new Date().toISOString(),
+        is_played: false,
+      });
+
+      if (insertError) {
+        console.error("Error inserting voice log:", insertError);
+      }
+
+      console.log("File uploaded successfully. Public URL:", publicUrl);
+    } catch (error) {
+      console.error("Error uploading file or inserting record:", error);
+    }
+  };
 
   useEffect(() => {
     if (mediaRecorderRef.current) {
@@ -282,8 +321,8 @@ export default function ProjectDetails() {
         setAudioUrl(url);
         setAudioBlob(blob);
         console.log("Audio URL created:", url);
-
         // Attempt to play audio
+        uploadBlob(blob)
         const audio = new Audio(url);
         audio.oncanplaythrough = () => {
           console.log("Audio is ready to play");
@@ -293,6 +332,15 @@ export default function ProjectDetails() {
       };
     }
   }, [mediaRecorderRef.current]);
+
+  const playSiu = useCallback(() => {
+    const audio = new Audio("/SiuChant.webm");
+    audio.oncanplaythrough = () => {
+      console.log("Playing audio...");
+      audio.play().catch((e) => console.error("Error playing audio:", e));
+    };
+    audio.onerror = (e) => console.error("Error loading audio:", e);
+  }, []);
 
   const playAudio = useCallback(() => {
     if (audioUrl) {
@@ -415,7 +463,7 @@ export default function ProjectDetails() {
           </div>
 
           <div className="w-full px-4 mt-8 flex flex-col items-center">
-            <button
+            <Button
               onClick={isRecording ? stopRecording : startRecording}
               className={`p-2 rounded-full ${
                 isRecording
@@ -424,9 +472,9 @@ export default function ProjectDetails() {
               } hover:bg-opacity-80 transition-colors`}
             >
               {isRecording ? <Square size={24} /> : <Mic size={24} />}
-              {isRecording ? "Stop Recording" : "Start Recording"}
-            </button>
-            {audioUrl && (
+              {isRecording ? "Stop Recording" : "Chant(+50 Tap)"}
+            </Button>
+            {/* {audioUrl && (
               <>
                 <button onClick={playAudio}>
                   <Play size={24} /> Play Audio
@@ -435,7 +483,7 @@ export default function ProjectDetails() {
                   <Upload size={24} /> Upload to Supabase
                 </button>
               </>
-            )}
+            )} */}
           </div>
         </TabsContent>
 
@@ -534,7 +582,7 @@ export default function ProjectDetails() {
         {voiceQueue.size > 0 && !isPlaying && (
           <div className="fixed bottom-20 right-4">
             <Button onClick={playNextVoice} className="bg-blue-500 hover:bg-blue-600">
-              Start Voice Playback ({voiceQueue.size})
+              New incoming voice chant ({voiceQueue.size})
             </Button>
           </div>
         )}
