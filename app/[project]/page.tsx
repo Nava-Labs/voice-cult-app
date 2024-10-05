@@ -6,7 +6,17 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { createClient } from "@supabase/supabase-js";
-import { ChevronDown, Copy, Mic, Play, Square, Upload } from "lucide-react";
+import {
+  Battery,
+  BatteryFull,
+  ChevronDown,
+  Coins,
+  Copy,
+  Mic,
+  Play,
+  Square,
+  Upload,
+} from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Coin } from "../components/coin/Coin";
 
@@ -167,16 +177,15 @@ export default function ProjectDetails() {
           className="flex flex-col items-center justify-center flex-grow overflow-hidden"
         >
           <div className="flex flex-col items-center">
-            <div className="flex items-center space-x-1">
-              <h1 className="text-4xl sm:text-5xl">{displayedPoints}</h1>
+            <div className="flex items-center space-x-2">
+              <Coins className="h-full" />
+              {/* <h1 className="text-4xl sm:text-5xl text-transparent bg-clip-text text-gradient-to-r from-blue-700 via-orange-600 to-green-600">{displayedPoints}</h1> */}
+              <h1 className="text-4xl sm:text-5xl text-transparent bg-clip-text bg-gradient-to-r from-blue-700 via-orange-600 to-green-600">
+                69,420
+              </h1>
             </div>
           </div>
 
-          <div className="pt-6 sm:pt-10 mb-6 sm:mb-8 flex justify-center">
-            <div className="flex items-center justify-center space-x-2">
-              <span className="text-lg sm:text-xl font-bold">1000/1000</span>
-            </div>
-          </div>
           <div className="flex justify-center">
             <Coin
               canIClickPlease={true}
@@ -188,8 +197,16 @@ export default function ProjectDetails() {
             />
           </div>
 
+          <div className="pt-6 sm:pt-10 sm:mb-8 flex justify-center">
+            <div className="flex items-center justify-center space-x-2">
+              <BatteryFull className="h-full" />
+              <span className="text-lg sm:text-xl font-bold">1000/1000</span>
+            </div>
+          </div>
+
           <div className="w-full px-4 mt-4">
-            <Progress value={currentBattery} className="w-full" />
+            {/* <Progress value={currentBattery} className="w-full" /> */}
+            <Progress value={69} className="w-full" />
           </div>
 
           <div className="w-full px-4 mt-8 flex flex-col items-center">
@@ -346,8 +363,8 @@ export default function ProjectDetails() {
           </div>
         </TabsContent>
 
-        <footer className="bg-gray-800 p-2 sticky bottom-0">
-          <TabsList className="sticky bottom-0 w-full">
+        <footer className="p-2 sticky bottom-0 w-full">
+          <TabsList className="sticky bottom-0 w-full bg-foreground">
             <TabsTrigger value="tap" className="w-full">
               Tap
             </TabsTrigger>
