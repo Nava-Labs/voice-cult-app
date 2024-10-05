@@ -1,15 +1,13 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
-import { Copy, ChevronDown, Mic } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Coin } from "../components/coin/Coin";
-import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ChevronDown, Copy, Mic } from "lucide-react";
+import { useCallback, useRef, useState } from "react";
+import { Coin } from "../components/coin/Coin";
 
 export default function ProjectDetails() {
   const [amount, setAmount] = useState("0.0");

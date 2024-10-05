@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { CryptoList } from "@/components/crypto-list";
+import truncateEthAddress from "truncate-eth-address";
 
 export default function Home() {
   return (
@@ -10,29 +11,36 @@ export default function Home() {
         <h1 className="text-3xl font-bold text-center">[start a new cult]</h1>
       </Link>
 
-      <div className="bg-gradient-to-r from-yellow-500 to-orange-500 p-2 rounded text-center font-bold text-2xl">
-        Cult of retardio
+      <div className="bg-blue-700 p-2 text-center font-bold text-2xl">
+        cult of retardio
       </div>
 
-      <div className="bg-gray-800 p-4 rounded-lg space-y-2">
+      <div className="bg-amber-600 p-4 space-y-2">
         <div className="flex items-center space-x-2">
           <img
-            src="/placeholder.svg?height=50&width=50"
-            alt="RGB Token"
-            className="w-12 h-12 rounded"
+            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS5WA2PMXgXzQ2AS15kKDz9svzLx4BpvviP6w&s"
+            alt="Jolik"
+            className="w-12 h-12 rounded-full"
           />
           <div>
             <div className="flex items-center space-x-2">
               <span>Created by 🐸</span>
-              <span className="text-blue-400">8nFKRR</span>
-              <span className="text-gray-400">6m ago</span>
+              <span className="text-green-500">
+                {truncateEthAddress(
+                  "0x4838b106fce9647bdf1e7877bf73ce8b0bad5f97",
+                )}
+              </span>
             </div>
             <div className="flex items-center space-x-2">
               <span className="text-green-400">market cap: 29.14K</span>
-              <span>[badge:👑]</span>
             </div>
-            <div>replies: 1</div>
-            <div className="font-bold">RGB [ticker: RGB]</div>
+            <div className="font-bold">Joker Vitalik [ticker: JOLIK]:</div>
+            <div className="text-sm">
+              JolikCoin: Vitalik meets Joker in this chaotic Ethereum meme
+              token. With 4.20 billion coins and features like the &quot;Arkham
+              Asylum Vault,&quot; it aims to disrupt crypto while making you
+              smile. Why so serious about finance?
+            </div>
           </div>
         </div>
       </div>
