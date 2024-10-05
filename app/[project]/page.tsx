@@ -472,7 +472,7 @@ export default function ProjectDetails() {
               } hover:bg-opacity-80 transition-colors`}
             >
               {isRecording ? <Square size={24} /> : <Mic size={24} />}
-              {isRecording ? "Stop Recording" : "Start Recording"}
+              {isRecording ? "Stop Recording" : "Chant(+50 Tap)"}
             </Button>
             {/* {audioUrl && (
               <>
