@@ -16,7 +16,7 @@ export default function ConnectButton() {
           >
             {isConnected
               ? truncateEthAddress(address as string)
-              : "Custom Connect"}
+              : "connect callet"}
           </Button>
         );
       }}

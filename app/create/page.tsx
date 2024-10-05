@@ -7,13 +7,26 @@ import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
 import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
-import { useAccount } from "wagmi";
+import {
+  useAccount,
+  useWaitForTransactionReceipt,
+  useWriteContract,
+} from "wagmi";
 import { Form, FormControl, FormField, FormItem } from "../components/Form";
 import { useRouter } from "next/navigation";
+import useConfig from "@/shared/hooks/useConfig";
+import { VC_TOKEN_DEPLOYER_ABI } from "@/lib/abis/vc-token-deployer.abi";
 
 export default function CoinCreationForm() {
   const router = useRouter();
-  const { address } = useAccount();
+  const { address, chain } = useAccount();
+  const { data: hash, writeContract } = useWriteContract();
+  const { isSuccess: isConfirmed } = useWaitForTransactionReceipt({
+    confirmations: 5,
+    hash,
+  });
+
+  const { VC_TOKEN_DEPLOYER } = useConfig(chain!);
 
   const [isCreatingCult, setIsCreatingCult] = useState(false);
 
@@ -54,6 +67,24 @@ export default function CoinCreationForm() {
 
     setIsCreatingCult(true);
     try {
+      writeContract({
+        address: VC_TOKEN_DEPLOYER,
+        abi: VC_TOKEN_DEPLOYER_ABI,
+        functionName: "createVc",
+        args: [
+          name,
+          ticker,
+          "",
+          BigInt("1000000000000000000000000000"),
+          BigInt(0),
+          "0xfbF4b007958B9419CC6a714aCF5561840154FA54",
+          "0xfbF4b007958B9419CC6a714aCF5561840154FA54",
+          false,
+          BigInt(0),
+        ],
+        value: BigInt(0),
+      });
+
       await supabase.from("projects").insert({
         user_address: address,
         token_address: address,
@@ -66,9 +97,10 @@ export default function CoinCreationForm() {
         },
         total_points_allocated: 0,
       });
+    } catch (error) {
+      console.error("Error creating cult:", error);
     } finally {
       setIsCreatingCult(false);
-      router.push("/");
     }
   };
 
