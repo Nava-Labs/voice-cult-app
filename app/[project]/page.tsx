@@ -1,17 +1,14 @@
 "use client";
 
-import React from 'react';
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { createClient } from "@supabase/supabase-js";
-import { BatteryFull, Coins, Mic, Play, Square, Upload } from "lucide-react";
+import { BatteryFull, Coins, Mic, Square } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Coin } from "../components/coin/Coin";
-import path from 'path';
 const isPlayedLocally: Record<string, boolean> = {};
 
 // Initialize Supabase client
@@ -22,7 +19,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error("Missing Supabase environment variables");
 }
 
-const supabase = createClient(supabaseUrl, supabaseAnonKey)
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Add this function before your component
 const listenToVoiceUpdates = (callback: (updatedVoice: any) => void) => {
@@ -30,7 +27,7 @@ const listenToVoiceUpdates = (callback: (updatedVoice: any) => void) => {
   // This is a placeholder implementation
   const intervalId = setInterval(() => {
     // Simulate voice updates
-    callback({ id: Date.now(), message: 'New voice update' });
+    callback({ id: Date.now(), message: "New voice update" });
   }, 5000);
 
   // Return a function to unsubscribe
@@ -39,25 +36,24 @@ const listenToVoiceUpdates = (callback: (updatedVoice: any) => void) => {
 
 // Create AudioContext outside of the component
 const getAudioContext = () => {
-  if (typeof window !== 'undefined') {
+  if (typeof window !== "undefined") {
     return new (window.AudioContext || window.webkitAudioContext)();
   }
   return null;
 };
 
-
 const updateVoiceStatus = async (voiceId: string, isPlayed: boolean) => {
   try {
     const { error } = await supabase
-      .from('voice_logs')
+      .from("voice_logs")
       .update({ is_played: isPlayed })
-      .eq('id', voiceId)
+      .eq("id", voiceId);
 
-    if (error) throw error
+    if (error) throw error;
   } catch (error) {
-    console.error('Error updating voice status:', error)
+    console.error("Error updating voice status:", error);
   }
-}
+};
 
 export default function ProjectDetails() {
   const [amount, setAmount] = useState("0.0");
@@ -68,9 +64,7 @@ export default function ProjectDetails() {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isTapping, setIsTapping] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [displayedPoints, setDisplayedPoints] = useState(0);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [currentBattery, setCurrentBattery] = useState(1000);
 
   const [isRecording, setIsRecording] = useState(false);
@@ -86,54 +80,60 @@ export default function ProjectDetails() {
 
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
 
-  const playVoice = async (voice: { voice_url: string; id: string }, audioContext: AudioContext) => {
+  const playVoice = async (
+    voice: { voice_url: string; id: string },
+    audioContext: AudioContext,
+  ) => {
     if (isPlayedLocally[voice.id]) {
       isPlayingRef.current = false;
-      console.log("voice already played locally")
-      return
+      console.log("voice already played locally");
+      return;
     }
-    isPlayedLocally[voice.id] = true
+    isPlayedLocally[voice.id] = true;
     const response = await fetch(voice.voice_url);
     const arrayBuffer = await response.arrayBuffer();
     const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-  
+
     const source = audioContext.createBufferSource();
     source.buffer = audioBuffer;
     source.connect(audioContext.destination);
-  
+
     return new Promise<void>((resolve) => {
       source.onended = () => resolve();
       source.start();
     });
   };
-  
+
   useEffect(() => {
     // Initialize audioContext here if it hasn't been already
-    console.log("audioContext", audioContext)
+    console.log("audioContext", audioContext);
     if (!audioContext) {
       setAudioContext(getAudioContext());
     }
   }, []);
-  
+
   const fetchUnplayedVoices = useCallback(async () => {
     const { data, error } = await supabase
-      .from('voice_logs')
-      .select('*')
-      .eq('is_played', false)
-      .order('created_at', { ascending: true });
+      .from("voice_logs")
+      .select("*")
+      .eq("is_played", false)
+      .order("created_at", { ascending: true });
 
     if (error) {
-      console.error('Error fetching voice logs:', error);
+      console.error("Error fetching voice logs:", error);
     } else if (data) {
-      console.log('Fetched unplayed voice logs:', data);
-      setVoiceQueue(prevQueue => {
+      console.log("Fetched unplayed voice logs:", data);
+      setVoiceQueue((prevQueue) => {
         const queueArray = [...prevQueue];
         // Remove the first (played) voice if the queue is not empty
         if (queueArray.length > 0) {
           queueArray.shift();
         }
         // Add new unique voices
-        const newVoices = data.filter((voice: { id: string }) => !queueArray.some(queueVoice => queueVoice.id === voice.id));
+        const newVoices = data.filter(
+          (voice: { id: string }) =>
+            !queueArray.some((queueVoice) => queueVoice.id === voice.id),
+        );
         return new Set([...queueArray, ...newVoices]);
       });
     }
@@ -144,7 +144,7 @@ export default function ProjectDetails() {
 
     isPlayingRef.current = true;
     const [nextVoice] = voiceQueue;
-    console.log("nextVoice", nextVoice, "voiceQueue size = ", voiceQueue.size)
+    console.log("nextVoice", nextVoice, "voiceQueue size = ", voiceQueue.size);
     if (!nextVoice.is_played) {
       try {
         if (!audioContext) {
@@ -152,20 +152,18 @@ export default function ProjectDetails() {
         }
         await playVoice(nextVoice, audioContext);
         await updateVoiceStatus(nextVoice.id, true);
-        console.log("yoooo")
-        setVoiceQueue(prev => {
+        console.log("yoooo");
+        setVoiceQueue((prev) => {
           const updated = new Set(prev);
           updated.delete(nextVoice);
           return updated;
         });
-
-
       } catch (error) {
-        console.error('Error playing voice:', error);
+        console.error("Error playing voice:", error);
       }
     }
 
-    setVoiceQueue(prev => {
+    setVoiceQueue((prev) => {
       const updated = new Set(prev);
       updated.delete(nextVoice);
       return updated;
@@ -174,18 +172,24 @@ export default function ProjectDetails() {
     isPlayingRef.current = false;
 
     // Check if the voice queue is empty after playing
-    if (voiceQueue.size <= 1) {  // Size will be 1 because we haven't removed the current voice yet
+    if (voiceQueue.size <= 1) {
+      // Size will be 1 because we haven't removed the current voice yet
       console.log("Voice queue is now empty. Stopping playback.");
       isPlayingRef.current = false;
       setIsPlaying(false);
-      return;  // Exit the function to stop further playback
-    }
-    else playNextVoice(); // Try to play the next voice
+      return; // Exit the function to stop further playback
+    } else playNextVoice(); // Try to play the next voice
   };
 
   // Call this when a new voice is added to the queue
   useEffect(() => {
-    console.log("voiceQueue.size = ", voiceQueue.size, [...voiceQueue], "isPlayingRef.current = ", isPlayingRef.current)
+    console.log(
+      "voiceQueue.size = ",
+      voiceQueue.size,
+      [...voiceQueue],
+      "isPlayingRef.current = ",
+      isPlayingRef.current,
+    );
     if (voiceQueue.size > 0 && !isPlayingRef.current) {
       playNextVoice();
     }
@@ -195,22 +199,26 @@ export default function ProjectDetails() {
     fetchUnplayedVoices();
 
     const subscription = supabase
-      .channel('voice_logs')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'voice_logs' }, (payload: any) => {
-        console.log('New voice log inserted:', payload); // Add this line
-        if (payload.new && payload.new.is_played === false) {
-          setVoiceQueue(prevQueue => {
-            const updatedQueue = new Set([...prevQueue, payload.new]);
-            console.log('Updated voice queue:', [...updatedQueue]);
-            return updatedQueue;
-          })
+      .channel("voice_logs")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "voice_logs" },
+        (payload: any) => {
+          console.log("New voice log inserted:", payload); // Add this line
+          if (payload.new && payload.new.is_played === false) {
+            setVoiceQueue((prevQueue) => {
+              const updatedQueue = new Set([...prevQueue, payload.new]);
+              console.log("Updated voice queue:", [...updatedQueue]);
+              return updatedQueue;
+            });
 
-          console.log("isPlayingRef.current = ", isPlayingRef.current)
-          // if (!isPlayingRef.current) {
-          //   playNextVoice();
-          // }
-        }
-      })
+            console.log("isPlayingRef.current = ", isPlayingRef.current);
+            // if (!isPlayingRef.current) {
+            //   playNextVoice();
+            // }
+          }
+        },
+      )
       .subscribe();
 
     return () => {
@@ -231,7 +239,7 @@ export default function ProjectDetails() {
   // };
 
   const handleClick = useCallback(() => {
-    playSiu()
+    playSiu();
     const clickValue = 1;
     setIsTapping(true);
     // farmDetails!.current_settled_point += clickValue;
@@ -294,16 +302,21 @@ export default function ProjectDetails() {
 
       const userId = "0x2d7e2DF65C1B06fa60FAf2a7D4C260738BB553D9";
       const projectId = "2925e7b9-5251-4b07-9de9-0764c6b644eb";
-      const { error: insertError } = await supabase.from("voice_logs").insert({
-        user_address: userId,
-        project_id: projectId,
-        voice_url: publicUrl,
-        created_at: new Date().toISOString(),
-        is_played: false,
-      });
+      const { statusText, error: insertError } = await supabase
+        .from("voice_logs")
+        .insert({
+          user_address: userId,
+          project_id: projectId,
+          voice_url: publicUrl,
+          created_at: new Date().toISOString(),
+          is_played: false,
+        });
 
       if (insertError) {
         console.error("Error inserting voice log:", insertError);
+      }
+      if (publicUrl) {
+        setCurrentBattery((prev) => prev + 50);
       }
 
       console.log("File uploaded successfully. Public URL:", publicUrl);
@@ -322,7 +335,7 @@ export default function ProjectDetails() {
         setAudioBlob(blob);
         console.log("Audio URL created:", url);
         // Attempt to play audio
-        uploadBlob(blob)
+        uploadBlob(blob);
         const audio = new Audio(url);
         audio.oncanplaythrough = () => {
           console.log("Audio is ready to play");
@@ -432,9 +445,8 @@ export default function ProjectDetails() {
           <div className="flex flex-col items-center">
             <div className="flex items-center space-x-2">
               <Coins className="h-full" />
-              {/* <h1 className="text-4xl sm:text-5xl text-transparent bg-clip-text text-gradient-to-r from-blue-700 via-orange-600 to-green-600">{displayedPoints}</h1> */}
               <h1 className="text-4xl sm:text-5xl text-transparent bg-clip-text bg-gradient-to-r from-blue-700 via-orange-600 to-green-600">
-                69,420
+                {displayedPoints}
               </h1>
             </div>
           </div>
@@ -453,13 +465,18 @@ export default function ProjectDetails() {
           <div className="pt-6 sm:pt-10 sm:mb-8 flex justify-center">
             <div className="flex items-center justify-center space-x-2">
               <BatteryFull className="h-full" />
-              <span className="text-lg sm:text-xl font-bold">1000/1000</span>
+              <span className="text-lg sm:text-xl font-bold">
+                {currentBattery}/1000
+              </span>
             </div>
           </div>
 
           <div className="w-full px-4 mt-4">
             {/* <Progress value={currentBattery} className="w-full" /> */}
-            <Progress value={69} className="w-full" />
+            <Progress
+              value={Number((currentBattery / 10).toFixed(0))}
+              className="w-full"
+            />
           </div>
 
           <div className="w-full px-4 mt-8 flex flex-col items-center">
@@ -472,7 +489,7 @@ export default function ProjectDetails() {
               } hover:bg-opacity-80 transition-colors`}
             >
               {isRecording ? <Square size={24} /> : <Mic size={24} />}
-              {isRecording ? "Stop Recording" : "Chant(+50 Tap)"}
+              {isRecording ? "Stop Recording" : "Chant (+50 Tap)"}
             </Button>
             {/* {audioUrl && (
               <>
@@ -581,7 +598,10 @@ export default function ProjectDetails() {
 
         {voiceQueue.size > 0 && !isPlaying && (
           <div className="fixed bottom-20 right-4">
-            <Button onClick={playNextVoice} className="bg-blue-500 hover:bg-blue-600">
+            <Button
+              onClick={playNextVoice}
+              className="bg-blue-500 hover:bg-blue-600"
+            >
               New incoming voice chant ({voiceQueue.size})
             </Button>
           </div>
