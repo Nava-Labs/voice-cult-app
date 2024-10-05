@@ -22,8 +22,8 @@ export default async function Home() {
       <div className="bg-amber-600 p-4 space-y-2">
         <div className="flex items-center space-x-2">
           <img
-            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS5WA2PMXgXzQ2AS15kKDz9svzLx4BpvviP6w&s"
-            alt="Jolik"
+            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT_uJGU94rrGdJz55SgDaEQapkjip47gaKYCQ&s"
+            alt="Ronaldo"
             className="w-36 h-36 rounded-full"
           />
           <div>
@@ -41,12 +41,13 @@ export default async function Home() {
             <div className="flex items-center space-x-2">
               <span className="text-green-400">taps: 69.420K</span>
             </div>
-            <div className="font-bold">Joker Vitalik [ticker: JOLIK]:</div>
+            <div className="font-bold">Ronaldo [ticker: SUIII]:</div>
             <div className="text-sm">
-              JolikCoin: Vitalik meets Joker in this chaotic Ethereum meme
-              token. With 4.20 billion coins and features like the &quot;Arkham
-              Asylum Vault,&quot; it aims to disrupt crypto while making you
-              smile. Why so serious about finance?
+              SUIcoin is a meme cryptocurrency based on Ronaldo&apos;s famous
+              &quot;SUI&quot; celebration. It lets fans celebrate trades by
+              shouting &quot;SUI!&quot; like their football idol. The coin
+              combines internet humor with Ronaldo&apos;s global popularity for
+              a unique crypto experience.
             </div>
           </div>
         </div>
@@ -68,7 +69,7 @@ export default async function Home() {
                 <div className="flex items-center space-x-2 text-foreground border border-foreground p-2">
                   <Avatar className="w-36 h-36">
                     <AvatarImage
-                      src={item.token_details.name}
+                      src={item.token_details.image_url}
                       alt={item.name}
                     />
                     <AvatarFallback>
