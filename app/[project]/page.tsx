@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { createClient } from "@supabase/supabase-js";
+
 import {
   Battery,
   BatteryFull,
@@ -18,8 +19,8 @@ import {
   Square,
   Upload,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
 import { Coin } from "../components/coin/Coin";
+const isPlayedLocally: Record<string, boolean> = {};
 
 // Initialize Supabase client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -29,7 +30,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error("Missing Supabase environment variables");
 }
 
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 // Add this function before your component
 const listenToVoiceUpdates = (callback: (updatedVoice: any) => void) => {
@@ -43,6 +44,47 @@ const listenToVoiceUpdates = (callback: (updatedVoice: any) => void) => {
   // Return a function to unsubscribe
   return () => clearInterval(intervalId);
 };
+
+// Create AudioContext outside of the component
+const getAudioContext = () => {
+  if (typeof window !== 'undefined') {
+    return new (window.AudioContext || window.webkitAudioContext)();
+  }
+  return null;
+};
+
+const playVoice = async (voice: { voice_url: string; id: string }, audioContext: AudioContext) => {
+  if (isPlayedLocally[voice.id]) {
+    console.log("voice already played locally")
+    return
+  }
+  isPlayedLocally[voice.id] = true
+  const response = await fetch(voice.voice_url);
+  const arrayBuffer = await response.arrayBuffer();
+  const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+
+  const source = audioContext.createBufferSource();
+  source.buffer = audioBuffer;
+  source.connect(audioContext.destination);
+
+  return new Promise<void>((resolve) => {
+    source.onended = () => resolve();
+    source.start();
+  });
+};
+
+const updateVoiceStatus = async (voiceId: string, isPlayed: boolean) => {
+  try {
+    const { error } = await supabase
+      .from('voice_logs')
+      .update({ is_played: isPlayed })
+      .eq('id', voiceId)
+
+    if (error) throw error
+  } catch (error) {
+    console.error('Error updating voice status:', error)
+  }
+}
 
 export default function ProjectDetails() {
   const [amount, setAmount] = useState("0.0");
@@ -65,6 +107,16 @@ export default function ProjectDetails() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const isPlayingRef = useRef(false);
 
+  const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
+
+  useEffect(() => {
+    // Initialize audioContext here if it hasn't been already
+    console.log("audioContext", audioContext)
+    if (!audioContext) {
+      setAudioContext(getAudioContext());
+    }
+  }, []);
+  
   const fetchUnplayedVoices = useCallback(async () => {
     const { data, error } = await supabase
       .from('voice_logs')
@@ -83,66 +135,82 @@ export default function ProjectDetails() {
           queueArray.shift();
         }
         // Add new unique voices
-        const newVoices = data.filter(voice => !queueArray.some(queueVoice => queueVoice.id === voice.id));
+        const newVoices = data.filter((voice: { id: string }) => !queueArray.some(queueVoice => queueVoice.id === voice.id));
         return new Set([...queueArray, ...newVoices]);
       });
     }
   }, []);
 
-  const playNextVoice = useCallback(() => {
-    console.log("playNextVoice called, isPlaying:", isPlaying);
-    if (!isPlaying) {
-      console.log("Not playing, returning");
-      return;
+  const playNextVoice = async () => {
+    if (isPlayingRef.current || voiceQueue.size === 0) return;
+
+    isPlayingRef.current = true;
+    const [nextVoice] = voiceQueue;
+    console.log("nextVoice", nextVoice, "voiceQueue size = ", voiceQueue.size)
+    if (!nextVoice.is_played) {
+      try {
+        if (!audioContext) {
+          throw new Error("AudioContext not initialized");
+        }
+        await playVoice(nextVoice, audioContext);
+        await updateVoiceStatus(nextVoice.id, true);
+        console.log("yoooo")
+        setVoiceQueue(prev => {
+          const updated = new Set(prev);
+          updated.delete(nextVoice);
+          return updated;
+        });
+
+
+      } catch (error) {
+        console.error('Error playing voice:', error);
+      }
     }
 
-    const unplayedVoices = Array.from(voiceQueue).filter(voice => !voice.is_played);
-    console.log("Unplayed voices:", unplayedVoices.length);
+    setVoiceQueue(prev => {
+      const updated = new Set(prev);
+      updated.delete(nextVoice);
+      return updated;
+    });
 
-    if (unplayedVoices.length > 0) {
-      const nextVoice = unplayedVoices[0];
-      console.log("Attempting to play voice:", nextVoice);
-      const audio = new Audio(nextVoice.audio_url);
-      audio.onended = () => {
-        console.log("Audio ended, marking as played");
-        setVoiceQueue(prevQueue => 
-          new Set(Array.from(prevQueue).map(voice => 
-            voice === nextVoice ? { ...voice, is_played: true } : voice
-          ))
-        );
-        playNextVoice();
-      };
-      audio.play().then(() => {
-        console.log("Audio started playing successfully");
-      }).catch(error => {
-        console.error('Error playing audio:', error);
-        setIsPlaying(false);
-      });
-    } else {
-      console.log("No more voices in the queue");
+    isPlayingRef.current = false;
+
+    // Check if the voice queue is empty after playing
+    if (voiceQueue.size <= 1) {  // Size will be 1 because we haven't removed the current voice yet
+      console.log("Voice queue is now empty. Stopping playback.");
+      isPlayingRef.current = false;
       setIsPlaying(false);
+      return;  // Exit the function to stop further playback
     }
-  }, [voiceQueue, setVoiceQueue, isPlaying]);
+    else playNextVoice(); // Try to play the next voice
+  };
 
+  // Call this when a new voice is added to the queue
   useEffect(() => {
-    console.log("useEffect triggered, isPlaying:", isPlaying);
-    if (isPlaying) {
+    console.log("voiceQueue.size = ", voiceQueue.size, [...voiceQueue], "isPlayingRef.current = ", isPlayingRef.current)
+    if (voiceQueue.size > 0 && !isPlayingRef.current) {
       playNextVoice();
     }
-  }, [isPlaying, playNextVoice]);
+  }, [voiceQueue]);
 
   useEffect(() => {
     fetchUnplayedVoices();
 
     const subscription = supabase
-      .channel('voice_logs_changes')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'voice_logs' }, (payload) => {
-        console.log('New voice log inserted:', payload);
+      .channel('voice_logs')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'voice_logs' }, (payload: any) => {
+        console.log('New voice log inserted:', payload); // Add this line
         if (payload.new && payload.new.is_played === false) {
-          setVoiceQueue(prevQueue => new Set([...prevQueue, payload.new]));
-          if (!isPlayingRef.current) {
-            startPlayingVoices();
-          }
+          setVoiceQueue(prevQueue => {
+            const updatedQueue = new Set([...prevQueue, payload.new]);
+            console.log('Updated voice queue:', [...updatedQueue]);
+            return updatedQueue;
+          })
+
+          console.log("isPlayingRef.current = ", isPlayingRef.current)
+          // if (!isPlayingRef.current) {
+          //   playNextVoice();
+          // }
         }
       })
       .subscribe();
@@ -157,11 +225,12 @@ export default function ProjectDetails() {
     };
   }, [fetchUnplayedVoices]);
 
-  const startPlayingVoices = () => {
-    setIsPlaying(true);
-    isPlayingRef.current = true;
-    playNextVoice();
-  };
+  // const startPlayingVoices = () => {
+  //   console.log('startPlayingVoices called'); // Add this line
+  //   setIsPlaying(true);
+  //   isPlayingRef.current = true;
+  //   playNextVoice();
+  // };
 
   const handleClick = useCallback(() => {
     const clickValue = 1;
@@ -515,7 +584,7 @@ export default function ProjectDetails() {
 
         {voiceQueue.size > 0 && !isPlaying && (
           <div className="fixed bottom-20 right-4">
-            <Button onClick={startPlayingVoices} className="bg-blue-500 hover:bg-blue-600">
+            <Button onClick={playNextVoice} className="bg-blue-500 hover:bg-blue-600">
               Start Voice Playback ({voiceQueue.size})
             </Button>
           </div>
