@@ -30,16 +30,7 @@ export default function Headers() {
           </h1>
         </Link>
         <div>
-          <Drawer>
-            {/* {!address && !session ? (
-              <DrawerTrigger>
-                <Button>Login</Button>
-              </DrawerTrigger>
-            ) : (
-              <DrawerTrigger>
-                <Button>{address ? truncateEthAddress(address) : ""}</Button>
-              </DrawerTrigger>
-            )} */}
+          {/* <Drawer>
             <DrawerTrigger>
               <Button variant={"outline"} className="border-foreground">
                 {!address && !session ? (
@@ -60,10 +51,10 @@ export default function Headers() {
                 <ConnectButton />
                 <SignInWorldcoinButton />
               </div>
-              {/* <DrawerFooter>
-              </DrawerFooter> */}
             </DrawerContent>
-          </Drawer>
+          </Drawer> */}
+          <ConnectButton />
+          <SignInWorldcoinButton />
         </div>
       </div>
     </div>

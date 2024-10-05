@@ -1,11 +1,17 @@
 "use client";
 
-import { useState } from 'react';
+import { useState } from "react";
 import { signIn } from "next-auth/react";
-import { IDKitWidget, VerificationLevel, ISuccessResult } from '@worldcoin/idkit'
+import {
+  IDKitWidget,
+  VerificationLevel,
+  ISuccessResult,
+} from "@worldcoin/idkit";
+import { Button } from "@/components/ui/button";
 
 export default function SignInWorldcoinButton() {
   const [isVerifying, setIsVerifying] = useState(false);
+  const [verified, setVerified] = useState(false);
 
   const onSuccess = (result: ISuccessResult) => {
     setIsVerifying(true);
@@ -17,8 +23,12 @@ export default function SignInWorldcoinButton() {
       },
       body: JSON.stringify(result),
     })
-      .then((response) => response.json())
+      .then((response) => {
+        setVerified(true);
+        return response.json();
+      })
       .then((data) => {
+        console.log("response");
         if (data.success) {
           // If verification is successful, sign in with NextAuth
           signIn("worldcoin");
@@ -42,8 +52,8 @@ export default function SignInWorldcoinButton() {
 
   return (
     <IDKitWidget
-      app_id="app_staging_d6a5e2a0a8a5b5a5e2a0a8a5b5a5e2a0" // Replace with your actual app_id
-      action="your-action-name" // Replace with your actual action name
+      app_id="app_50f2d8f41e11d06d7a2ddd612f217916" // Replace with your actual app_id
+      action="verify-with-worldcoin" // Replace with your actual action name
       onSuccess={(result) => onSuccess(result)}
       handleVerify={async (proof) => {
         await handleVerify(proof);
@@ -52,13 +62,34 @@ export default function SignInWorldcoinButton() {
       verification_level={VerificationLevel.Orb}
     >
       {({ open }) => (
-        <button 
+        <Button
           onClick={open}
           disabled={isVerifying}
-          className="p-2 rounded-none bg-amber-600 text-white w-40 hover:bg-amber-700"
+          variant={"outline"}
+          className="p-2 rounded-none bg-amber-600 text-white hover:text-white w-28 hover:bg-amber-700"
         >
-          {isVerifying ? "Verifying..." : "Verify with World ID"}
-        </button>
+          {!isVerifying && !verified && (
+            <div className="flex justify-center items-center">
+              <div>Verify</div>
+              <img
+                src="/worldcoin-logo.png"
+                className="h-3 ml-2"
+                alt="Worldcoin logo"
+              />
+            </div>
+          )}
+          {isVerifying && "Verifying..."}
+          {!isVerifying && verified && (
+            <div className="flex justify-center items-center">
+              <div>Verified</div>
+              <img
+                src="/worldcoin-logo.png"
+                className="h-3 ml-2"
+                alt="Worldcoin logo"
+              />
+            </div>
+          )}
+        </Button>
       )}
     </IDKitWidget>
   );

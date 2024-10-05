@@ -12,7 +12,7 @@ export default function ConnectButton() {
           <Button
             onClick={show}
             variant={"outline"}
-            className="p-2 rounded-none bg-blue-700 text-white w-40"
+            className="p-2 rounded-none bg-blue-700 hover:bg-blue-800 hover:text-white text-white w-28"
           >
             {isConnected
               ? truncateEthAddress(address as string)
