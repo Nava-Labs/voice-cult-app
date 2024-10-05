@@ -179,7 +179,7 @@ export const Coin = ({
                     transition={{ duration: numberAnimationDurationSec }}
                   >
                     {/* {number.value} */}
-                    SIUUUUU!!!!
+                    SIUU!!
                   </motion.div>
                 );
               })}
