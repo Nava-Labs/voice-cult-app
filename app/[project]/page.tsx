@@ -7,7 +7,6 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { createClient } from "@supabase/supabase-js";
 import {
-  Battery,
   BatteryFull,
   ChevronDown,
   Coins,
@@ -34,10 +33,14 @@ export default function ProjectDetails() {
   const [amount, setAmount] = useState("0.0");
 
   const accumulatedPoints = useRef(0);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const currentBatteryWithRef = useRef(0);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isTapping, setIsTapping] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [displayedPoints, setDisplayedPoints] = useState(0);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [currentBattery, setCurrentBattery] = useState(1000);
 
   const [isRecording, setIsRecording] = useState(false);

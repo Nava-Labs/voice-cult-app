@@ -44,6 +44,7 @@ export default function SignInWorldcoinButton() {
       });
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleVerify = async (proof: ISuccessResult) => {
     // This function is called when the proof is received
     // You can add additional client-side verification here if needed
