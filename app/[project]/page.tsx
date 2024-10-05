@@ -24,7 +24,7 @@ const isPlayedLocally: Record<string, boolean> = {};
 
 // Initialize Supabase client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error("Missing Supabase environment variables");
@@ -53,25 +53,6 @@ const getAudioContext = () => {
   return null;
 };
 
-const playVoice = async (voice: { voice_url: string; id: string }, audioContext: AudioContext) => {
-  if (isPlayedLocally[voice.id]) {
-    console.log("voice already played locally")
-    return
-  }
-  isPlayedLocally[voice.id] = true
-  const response = await fetch(voice.voice_url);
-  const arrayBuffer = await response.arrayBuffer();
-  const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-
-  const source = audioContext.createBufferSource();
-  source.buffer = audioBuffer;
-  source.connect(audioContext.destination);
-
-  return new Promise<void>((resolve) => {
-    source.onended = () => resolve();
-    source.start();
-  });
-};
 
 const updateVoiceStatus = async (voiceId: string, isPlayed: boolean) => {
   try {
@@ -109,6 +90,27 @@ export default function ProjectDetails() {
 
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
 
+  const playVoice = async (voice: { voice_url: string; id: string }, audioContext: AudioContext) => {
+    if (isPlayedLocally[voice.id]) {
+      isPlayingRef.current = false;
+      console.log("voice already played locally")
+      return
+    }
+    isPlayedLocally[voice.id] = true
+    const response = await fetch(voice.voice_url);
+    const arrayBuffer = await response.arrayBuffer();
+    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+  
+    const source = audioContext.createBufferSource();
+    source.buffer = audioBuffer;
+    source.connect(audioContext.destination);
+  
+    return new Promise<void>((resolve) => {
+      source.onended = () => resolve();
+      source.start();
+    });
+  };
+  
   useEffect(() => {
     // Initialize audioContext here if it hasn't been already
     console.log("audioContext", audioContext)
@@ -355,27 +357,27 @@ export default function ProjectDetails() {
     }
   }, [audioBlob]);
 
-  useEffect(() => {
-    const unsubscribe = listenToVoiceUpdates((updatedVoice) => {
-      setVoiceQueue(prevQueue => {
-        const updatedQueue = new Set([...prevQueue]);
-        for (const voice of updatedQueue) {
-          if (voice.id === updatedVoice.id) {
-            if (updatedVoice.is_played) {
-              updatedQueue.delete(voice);
-            } else {
-              updatedQueue.delete(voice);
-              updatedQueue.add(updatedVoice);
-            }
-            break;
-          }
-        }
-        return updatedQueue;
-      });
-    });
+  // useEffect(() => {
+  //   const unsubscribe = listenToVoiceUpdates((updatedVoice) => {
+  //     setVoiceQueue(prevQueue => {
+  //       const updatedQueue = new Set([...prevQueue]);
+  //       for (const voice of updatedQueue) {
+  //         if (voice.id === updatedVoice.id) {
+  //           if (updatedVoice.is_played) {
+  //             updatedQueue.delete(voice);
+  //           } else {
+  //             updatedQueue.delete(voice);
+  //             updatedQueue.add(updatedVoice);
+  //           }
+  //           break;
+  //         }
+  //       }
+  //       return updatedQueue;
+  //     });
+  //   });
 
-    return () => unsubscribe();
-  }, []);
+  //   return () => unsubscribe();
+  // }, []);
 
   return (
     <Tabs defaultValue="tap">
