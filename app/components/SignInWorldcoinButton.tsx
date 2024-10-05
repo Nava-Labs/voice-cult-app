@@ -1,14 +1,16 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { signIn } from "next-auth/react";
 
 export default function SignInWorldcoinButton() {
   return (
-    <button
+    <Button
+      variant={"outline"}
       onClick={() => signIn("worldcoin")}
-      className="border rounded-lg p-2"
+      className="p-2 rounded-none bg-amber-600 text-white w-40"
     >
       Sign in with Worldcoin
-    </button>
+    </Button>
   );
 }

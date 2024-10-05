@@ -30,29 +30,40 @@ export default function Headers() {
           </h1>
         </Link>
         <div>
-          {!address && !session ? (
-            <Drawer>
+          <Drawer>
+            {/* {!address && !session ? (
               <DrawerTrigger>
                 <Button>Login</Button>
               </DrawerTrigger>
-              <DrawerContent>
-                <DrawerHeader>
-                  <DrawerTitle>Login to Voice Cult</DrawerTitle>
-                  <DrawerDescription>
-                    Connect your wallet and sign in with Worldcoin
-                  </DrawerDescription>
-                </DrawerHeader>
-                <DrawerFooter>
-                  <div className="flex flex-col items-center space-y-2">
-                    <ConnectButton />
-                    <SignInWorldcoinButton />
-                  </div>
-                </DrawerFooter>
-              </DrawerContent>
-            </Drawer>
-          ) : (
-            <Button>{address ? truncateEthAddress(address) : ""}</Button>
-          )}
+            ) : (
+              <DrawerTrigger>
+                <Button>{address ? truncateEthAddress(address) : ""}</Button>
+              </DrawerTrigger>
+            )} */}
+            <DrawerTrigger>
+              <Button variant={"outline"} className="border-foreground">
+                {!address && !session ? (
+                  <div>Login</div>
+                ) : (
+                  <div>{address ? truncateEthAddress(address) : ""}</div>
+                )}
+              </Button>
+            </DrawerTrigger>
+            <DrawerContent>
+              <DrawerHeader>
+                <DrawerTitle>Login to Voice Cult</DrawerTitle>
+                <DrawerDescription>
+                  Connect your wallet and sign in with Worldcoin
+                </DrawerDescription>
+              </DrawerHeader>
+              <div className="flex justify-center items-center space-x-2 mb-5">
+                <ConnectButton />
+                <SignInWorldcoinButton />
+              </div>
+              {/* <DrawerFooter>
+              </DrawerFooter> */}
+            </DrawerContent>
+          </Drawer>
         </div>
       </div>
     </div>
