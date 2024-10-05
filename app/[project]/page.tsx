@@ -1,5 +1,6 @@
 "use client";
 
+import React, { useCallback } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,7 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { createClient } from "@supabase/supabase-js";
 import { ChevronDown, Copy, Mic, Play, Square, Upload } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Coin } from "../components/coin/Coin";
 
 // Initialize Supabase client
@@ -19,6 +20,19 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+// Add this function before your component
+const listenToVoiceUpdates = (callback: (updatedVoice: any) => void) => {
+  // Implement your voice update listening logic here
+  // This is a placeholder implementation
+  const intervalId = setInterval(() => {
+    // Simulate voice updates
+    callback({ id: Date.now(), message: 'New voice update' });
+  }, 5000);
+
+  // Return a function to unsubscribe
+  return () => clearInterval(intervalId);
+};
 
 export default function ProjectDetails() {
   const [amount, setAmount] = useState("0.0");
@@ -35,6 +49,109 @@ export default function ProjectDetails() {
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [voiceQueue, setVoiceQueue] = useState<Set<any>>(new Set());
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const isPlayingRef = useRef(false);
+
+  const fetchUnplayedVoices = useCallback(async () => {
+    const { data, error } = await supabase
+      .from('voice_logs')
+      .select('*')
+      .eq('is_played', false)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching voice logs:', error);
+    } else if (data) {
+      console.log('Fetched unplayed voice logs:', data);
+      setVoiceQueue(prevQueue => {
+        const queueArray = [...prevQueue];
+        // Remove the first (played) voice if the queue is not empty
+        if (queueArray.length > 0) {
+          queueArray.shift();
+        }
+        // Add new unique voices
+        const newVoices = data.filter(voice => !queueArray.some(queueVoice => queueVoice.id === voice.id));
+        return new Set([...queueArray, ...newVoices]);
+      });
+    }
+  }, []);
+
+  const playNextVoice = useCallback(() => {
+    console.log("playNextVoice called, isPlaying:", isPlaying);
+    if (!isPlaying) {
+      console.log("Not playing, returning");
+      return;
+    }
+
+    const unplayedVoices = Array.from(voiceQueue).filter(voice => !voice.is_played);
+    console.log("Unplayed voices:", unplayedVoices.length);
+
+    if (unplayedVoices.length > 0) {
+      const nextVoice = unplayedVoices[0];
+      console.log("Attempting to play voice:", nextVoice);
+      const audio = new Audio(nextVoice.audio_url);
+      audio.onended = () => {
+        console.log("Audio ended, marking as played");
+        setVoiceQueue(prevQueue => 
+          new Set(Array.from(prevQueue).map(voice => 
+            voice === nextVoice ? { ...voice, is_played: true } : voice
+          ))
+        );
+        playNextVoice();
+      };
+      audio.play().then(() => {
+        console.log("Audio started playing successfully");
+      }).catch(error => {
+        console.error('Error playing audio:', error);
+        setIsPlaying(false);
+      });
+    } else {
+      console.log("No more voices in the queue");
+      setIsPlaying(false);
+    }
+  }, [voiceQueue, setVoiceQueue, isPlaying]);
+
+  useEffect(() => {
+    console.log("useEffect triggered, isPlaying:", isPlaying);
+    if (isPlaying) {
+      playNextVoice();
+    }
+  }, [isPlaying, playNextVoice]);
+
+  useEffect(() => {
+    fetchUnplayedVoices();
+
+    const subscription = supabase
+      .channel('voice_logs_changes')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'voice_logs' }, (payload) => {
+        console.log('New voice log inserted:', payload);
+        if (payload.new && payload.new.is_played === false) {
+          setVoiceQueue(prevQueue => new Set([...prevQueue, payload.new]));
+          if (!isPlayingRef.current) {
+            startPlayingVoices();
+          }
+        }
+      })
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+      isPlayingRef.current = false;
+    };
+  }, [fetchUnplayedVoices]);
+
+  const startPlayingVoices = () => {
+    setIsPlaying(true);
+    isPlayingRef.current = true;
+    playNextVoice();
+  };
 
   const handleClick = useCallback(() => {
     const clickValue = 1;
@@ -158,6 +275,28 @@ export default function ProjectDetails() {
       console.error("Error uploading file or inserting record:", error);
     }
   }, [audioBlob]);
+
+  useEffect(() => {
+    const unsubscribe = listenToVoiceUpdates((updatedVoice) => {
+      setVoiceQueue(prevQueue => {
+        const updatedQueue = new Set([...prevQueue]);
+        for (const voice of updatedQueue) {
+          if (voice.id === updatedVoice.id) {
+            if (updatedVoice.is_played) {
+              updatedQueue.delete(voice);
+            } else {
+              updatedQueue.delete(voice);
+              updatedQueue.add(updatedVoice);
+            }
+            break;
+          }
+        }
+        return updatedQueue;
+      });
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   return (
     <Tabs defaultValue="tap">
@@ -356,6 +495,14 @@ export default function ProjectDetails() {
             </TabsTrigger>
           </TabsList>
         </footer>
+
+        {voiceQueue.size > 0 && !isPlaying && (
+          <div className="fixed bottom-20 right-4">
+            <Button onClick={startPlayingVoices} className="bg-blue-500 hover:bg-blue-600">
+              Start Voice Playback ({voiceQueue.size})
+            </Button>
+          </div>
+        )}
       </div>
     </Tabs>
   );
