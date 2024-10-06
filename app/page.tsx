@@ -20,37 +20,39 @@ export default async function Home() {
       </div>
 
       <div className="bg-amber-600 p-4 space-y-2">
-        <div className="flex items-center space-x-2">
-          <img
-            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT_uJGU94rrGdJz55SgDaEQapkjip47gaKYCQ&s"
-            alt="RONELDO"
-            className="w-36 h-36 rounded-full"
-          />
-          <div>
-            <div className="flex items-center space-x-2">
-              <span>Created by</span>
-              <span className="text-xs text-blue-700">
-                {truncateEthAddress(
-                  "0x4838b106fce9647bdf1e7877bf73ce8b0bad5f97",
-                )}
-              </span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <span className="text-green-400">market cap: 29.14K</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <span className="text-green-400">taps: 69.420K</span>
-            </div>
-            <div className="font-bold">RONELDO [ticker: SUIII]:</div>
-            <div className="text-sm">
-              SUIcoin is a meme cryptocurrency based on Ronaldo&apos;s famous
-              &quot;SUI&quot; celebration. It lets fans celebrate trades by
-              shouting &quot;SUI!&quot; like their football idol. The coin
-              combines internet humor with Ronaldo&apos;s global popularity for
-              a unique crypto experience.
+        <Link href={"/0x6e6159c4f411011aEcCABB4082b0Cc4382b99416"}>
+          <div className="flex items-center space-x-2">
+            <img
+              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT_uJGU94rrGdJz55SgDaEQapkjip47gaKYCQ&s"
+              alt="RONELDO"
+              className="w-36 h-36 rounded-full"
+            />
+            <div>
+              <div className="flex items-center space-x-2">
+                <span>Created by</span>
+                <span className="text-xs text-blue-700">
+                  {truncateEthAddress(
+                    "0x4838b106fce9647bdf1e7877bf73ce8b0bad5f97",
+                  )}
+                </span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <span className="text-green-400">market cap: 29.14K</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <span className="text-green-400">taps: 69.420K</span>
+              </div>
+              <div className="font-bold">RONELDO [ticker: SUIII]:</div>
+              <div className="text-sm">
+                SUIcoin is a meme cryptocurrency based on Ronaldo&apos;s famous
+                &quot;SUI&quot; celebration. It lets fans celebrate trades by
+                shouting &quot;SUI!&quot; like their football idol. The coin
+                combines internet humor with Ronaldo&apos;s global popularity
+                for a unique crypto experience.
+              </div>
             </div>
           </div>
-        </div>
+        </Link>
       </div>
 
       <div className="flex space-x-2">
