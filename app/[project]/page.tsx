@@ -301,7 +301,7 @@ export default function ProjectDetails() {
       } = supabase.storage.from("voice-chant-files").getPublicUrl(fileName);
 
       const userId = "0x2d7e2DF65C1B06fa60FAf2a7D4C260738BB553D9";
-      const projectId = "2925e7b9-5251-4b07-9de9-0764c6b644eb";
+      const projectId = "50f8ff42-fe53-4b90-b089-3acc841b2f31";
       const { statusText, error: insertError } = await supabase
         .from("voice_logs")
         .insert({
@@ -479,6 +479,12 @@ export default function ProjectDetails() {
           className="flex flex-col items-center justify-center flex-grow overflow-hidden"
         >
           <div className="flex flex-col items-center">
+          <div className="flex items-center space-x-2 border-2 border-gray-300 rounded-lg p-2 bg-gradient-to-r from-blue-700 via-orange-600 to-green-600">
+              <h1 className="text-4xl sm:text-5xl text-white">
+                RONELDO
+              </h1>
+            </div>
+
             <div className="flex items-center space-x-2 border-2 border-gray-300 rounded-lg p-2 bg-gradient-to-r from-blue-700 via-orange-600 to-green-600">
               <h1 className="text-4xl sm:text-5xl text-white">
                 airdrop allocation: 12%

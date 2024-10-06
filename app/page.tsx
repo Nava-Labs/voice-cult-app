@@ -23,7 +23,7 @@ export default async function Home() {
         <div className="flex items-center space-x-2">
           <img
             src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT_uJGU94rrGdJz55SgDaEQapkjip47gaKYCQ&s"
-            alt="Ronaldo"
+            alt="RONELDO"
             className="w-36 h-36 rounded-full"
           />
           <div>
@@ -41,7 +41,7 @@ export default async function Home() {
             <div className="flex items-center space-x-2">
               <span className="text-green-400">taps: 69.420K</span>
             </div>
-            <div className="font-bold">Ronaldo [ticker: SUIII]:</div>
+            <div className="font-bold">RONELDO [ticker: SUIII]:</div>
             <div className="text-sm">
               SUIcoin is a meme cryptocurrency based on Ronaldo&apos;s famous
               &quot;SUI&quot; celebration. It lets fans celebrate trades by
