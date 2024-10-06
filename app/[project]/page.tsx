@@ -413,6 +413,42 @@ export default function ProjectDetails() {
     }
   }, [audioBlob]);
 
+  const [projectList, setProjectList] = useState([]);
+  const [currentAddress, setCurrentAddress] = useState<string>("");
+
+  useEffect(() => {
+    const fetchCurrentParams = () => {
+      const path = window.location.pathname;
+      const address = path.substring(path.lastIndexOf("/") + 1);
+      setCurrentAddress(address);
+    };
+
+    fetchCurrentParams();
+  }, []);
+
+  useEffect(() => {
+    const fetchProjectList = async () => {
+      if (currentAddress) {
+        const { data: projectListData, error } = await supabase
+          .from("projects")
+          .select()
+          .eq("token_address", currentAddress);
+
+        if (error) {
+          console.error("Error fetching project list:", error);
+        } else {
+          console.log("Project list data:", projectListData);
+          setProjectList(projectListData[0] || []);
+        }
+      }
+    };
+
+    fetchProjectList();
+  }, [currentAddress]);
+
+  console.log("projectList", projectList);
+  console.log("currentAddress", currentAddress);
+
   // useEffect(() => {
   //   const unsubscribe = listenToVoiceUpdates((updatedVoice) => {
   //     setVoiceQueue(prevQueue => {
@@ -443,6 +479,12 @@ export default function ProjectDetails() {
           className="flex flex-col items-center justify-center flex-grow overflow-hidden"
         >
           <div className="flex flex-col items-center">
+            <div className="flex items-center space-x-2 border-2 border-gray-300 rounded-lg p-2 bg-gradient-to-r from-blue-700 via-orange-600 to-green-600">
+              <h1 className="text-4xl sm:text-5xl text-white">
+                airdrop allocation: 12%
+              </h1>
+            </div>
+
             <div className="flex items-center space-x-2">
               <Coins className="h-full" />
               <h1 className="text-4xl sm:text-5xl text-transparent bg-clip-text bg-gradient-to-r from-blue-700 via-orange-600 to-green-600">
